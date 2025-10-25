@@ -1,0 +1,6 @@
+[
+  { "q": "2 + 2 = ?", "a": "4" },
+  { "q": "Capital of France?", "a": "paris" },
+  { "q": "5 * 3 = ?", "a": "15" },
+  { "q": "Color of the sky?", "a": "blue" }
+]

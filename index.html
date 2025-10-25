@@ -4,47 +4,63 @@
   <meta charset="utf-8">
   <title>Quiz Battle</title>
   <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    .hp-bar {
-      height: 20px; width: 200px; background: #ccc; border-radius: 10px; margin: 10px auto;
-      position: relative;
-    }
-    .hp-fill {
-      height: 100%; background: limegreen; border-radius: 10px; width: 100%; transition: width 0.5s;
-    }
+    body { font-family: sans-serif; text-align: center; margin-top: 40px; }
+    .hp-bar { height: 20px; width: 200px; background: #ccc; border-radius: 10px; margin: 10px auto; position: relative; }
+    .hp-fill { height: 100%; background: limegreen; border-radius: 10px; width: 100%; transition: width 0.5s; }
   </style>
 </head>
 <body>
-  <h2 id="question">Waiting for another player...</h2>
-  <p>Time left: <span id="timer">--</span> s</p>
-
-  <div>
-    <h3>Your HP</h3>
-    <div class="hp-bar"><div id="yourHpFill" class="hp-fill"></div></div>
+  <div id="language-select">
+    <h2>Select Language</h2>
+    <select id="lang">
+      <option value="en">English</option>
+      <option value="bg">Български</option>
+      <option value="fr">Français</option>
+      <option value="es">Español</option>
+    </select>
+    <br><br>
+    <button onclick="joinGame()">Join Game</button>
   </div>
-  <div>
-    <h3>Enemy HP</h3>
-    <div class="hp-bar"><div id="enemyHpFill" class="hp-fill"></div></div>
-  </div>
 
-  <input id="answer" placeholder="Your answer">
-  <button onclick="sendAnswer()">Send</button>
-  <p id="status"></p>
+  <div id="game" style="display:none;">
+    <h2 id="question">Waiting for another player...</h2>
+    <p>Time left: <span id="timer">--</span> s</p>
+
+    <div>
+      <h3>Your HP</h3>
+      <div class="hp-bar"><div id="yourHpFill" class="hp-fill"></div></div>
+    </div>
+    <div>
+      <h3>Enemy HP</h3>
+      <div class="hp-bar"><div id="enemyHpFill" class="hp-fill"></div></div>
+    </div>
+
+    <input id="answer" placeholder="Your answer">
+    <button onclick="sendAnswer()">Send</button>
+  </div>
 
   <script>
-    const ws = new WebSocket("ws://localhost:8070");
-    let playerId = localStorage.getItem("playerId");
+    let ws;
+    let playerId;
     let canAnswer = false;
     let timerInterval;
 
-    ws.onopen = () => ws.send(JSON.stringify({ type: "join" }));
+    function joinGame() {
+      const lang = document.getElementById("lang").value;
+      ws = new WebSocket("ws://localhost:8070");
+      ws.onopen = () => ws.send(JSON.stringify({ type: "join", language: lang }));
+      ws.onmessage = handleMessage;
 
-    ws.onmessage = (msg) => {
+      document.getElementById("language-select").style.display = "none";
+      document.getElementById("game").style.display = "block";
+    }
+
+    function handleMessage(msg) {
       const data = JSON.parse(msg.data);
 
-      if (data.playerId && !playerId) {
-        playerId = data.playerId;
-        localStorage.setItem("playerId", playerId);
+      if (data.type === "waiting") {
+        document.getElementById("question").textContent = data.msg;
+        return;
       }
 
       if (data.type === "question") {
@@ -53,10 +69,9 @@
         canAnswer = true;
         startTimer(data.time);
       } else if (data.type === "result") {
-        localStorage.clear();
         document.body.innerHTML = `<h1>${data.msg}</h1>`;
       }
-    };
+    }
 
     function sendAnswer() {
       if (!canAnswer) return;
@@ -83,15 +98,15 @@
     }
 
     function updateHpBars(yourHp, enemyHp) {
-      document.getElementById("yourHpFill").style.width = `${yourHp}%`;
-      document.getElementById("enemyHpFill").style.width = `${enemyHp}%`;
+      const yourBar = document.getElementById("yourHpFill");
+      const enemyBar = document.getElementById("enemyHpFill");
 
-      document.getElementById("yourHpFill").style.background = yourHp > 50 ? "limegreen" :
-        yourHp > 25 ? "orange" : "red";
-      document.getElementById("enemyHpFill").style.background = enemyHp > 50 ? "limegreen" :
-        enemyHp > 25 ? "orange" : "red";
+      yourBar.style.width = `${yourHp}%`;
+      enemyBar.style.width = `${enemyHp}%`;
+
+      yourBar.style.background = yourHp > 50 ? "limegreen" : yourHp > 25 ? "orange" : "red";
+      enemyBar.style.background = enemyHp > 50 ? "limegreen" : enemyHp > 25 ? "orange" : "red";
     }
   </script>
 </body>
 </html>
-
