@@ -1,33 +1,42 @@
 import { WebSocketServer } from "ws";
-import fs from "fs";
-import path from "path";
 
 const wss = new WebSocketServer({ port: 8070 });
+const QUESTION_TIME = 10000;
 const rooms = {};
-const QUESTION_TIME = 10000; // 10 seconds
 
-function loadQuestions(lang = "en") {
-  const filePath = path.resolve(`./questions/${lang}.json`);
-  try {
-    const data = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(data);
-  } catch (err) {
-    console.error(`Error loading questions for ${lang}:`, err);
-    return JSON.parse(fs.readFileSync("./questions/en.json", "utf8"));
-  }
+const allQuestions = [
+  { q: "What is 2 + 2?", a: "4" },
+  { q: "What color is the sky?", a: "blue" },
+  { q: "How many days are in a week?", a: "7" },
+  { q: "What is the capital of France?", a: "paris" },
+  { q: "What planet do we live on?", a: "earth" },
+  { q: "What is the opposite of hot?", a: "cold" },
+  { q: "How many legs does a spider have?", a: "8" },
+  { q: "What gas do humans need to breathe?", a: "oxygen" },
+  { q: "What do bees make?", a: "honey" },
+  { q: "What is 5 x 5?", a: "25" },
+  { q: "What comes after Tuesday?", a: "wednesday" },
+  { q: "What is the first month of the year?", a: "january" },
+  { q: "What is H2O commonly known as?", a: "water" },
+  { q: "How many continents are there?", a: "7" },
+  { q: "Which animal says 'moo'?", a: "cow" },
+];
+
+// 🧩 Helper: pick 10 random unique questions
+function getRandomQuestions() {
+  const shuffled = allQuestions.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 10);
 }
 
 wss.on("connection", (ws) => {
   ws.on("message", (msg) => {
     const data = JSON.parse(msg);
 
-    // --- Join or create room ---
+    // --- Player joins ---
     if (data.type === "join") {
-      const lang = data.language || "en";
-      let room = Object.values(rooms).find(
-        r => r.players.length < 2 && r.language === lang
-      );
+      const character = data.character || "mario";
 
+      let room = Object.values(rooms).find((r) => r.players.length < 2);
       if (!room) {
         room = {
           id: Date.now(),
@@ -35,9 +44,9 @@ wss.on("connection", (ws) => {
           hp: {},
           currentQuestion: 0,
           answers: {},
+          characters: {},
           timer: null,
-          language: lang,
-          questions: loadQuestions(lang)
+          questions: getRandomQuestions(),
         };
         rooms[room.id] = room;
       }
@@ -46,77 +55,99 @@ wss.on("connection", (ws) => {
       ws.id = playerId;
       room.players.push(ws);
       room.hp[playerId] = 100;
+      room.characters[playerId] = character;
 
-      if (room.players.length === 2) {
-        startQuestion(room);
-      } else {
-        ws.send(JSON.stringify({ type: "waiting", msg: "Waiting for another player..." }));
-      }
+      if (room.players.length === 2) startQuestion(room);
+      else ws.send(JSON.stringify({ type: "waiting", msg: "Waiting for another player..." }));
     }
 
     // --- Handle answer ---
     if (data.type === "answer") {
-      const room = Object.values(rooms).find(r => r.players.includes(ws));
+      const room = Object.values(rooms).find((r) => r.players.includes(ws));
       if (!room) return;
 
-      const q = room.questions[room.currentQuestion];
-      const correct = data.ans.trim().toLowerCase() === q.a.toLowerCase();
-      room.answers[ws.id] = correct;
-    }
-  });
+      const playerAnswer = data.answer.trim().toLowerCase();
+      room.answers[ws.id] = playerAnswer;
 
-  ws.on("close", () => {
-    const room = Object.values(rooms).find(r => r.players.includes(ws));
-    if (!room) return;
-    room.players.forEach(p => {
-      if (p !== ws && p.readyState === 1)
-        p.send(JSON.stringify({ type: "result", msg: "Opponent disconnected." }));
-    });
-    delete rooms[room.id];
+      // If both players answered, end the round
+      if (Object.keys(room.answers).length === 2) endRound(room);
+    }
   });
 });
 
+// 🧩 Ask the next question
 function startQuestion(room) {
+  if (room.currentQuestion >= room.questions.length) {
+    endGame(room, "No more questions! It's a draw!");
+    return;
+  }
+
   const q = room.questions[room.currentQuestion];
   room.answers = {};
 
-  room.players.forEach(p => {
-    const enemy = room.players.find(e => e !== p);
-    p.send(JSON.stringify({
-      type: "question",
-      question: q.q,
-      options: q.options,
-      yourHp: room.hp[p.id],
-      enemyHp: room.hp[enemy?.id] ?? 100,
-      playerId: p.id,
-      time: QUESTION_TIME / 1000,
-      language: room.language
-    }));
+  room.players.forEach((p) => {
+    const enemy = room.players.find((e) => e !== p);
+    p.send(
+      JSON.stringify({
+        type: "question",
+        question: q.q,
+        yourHp: room.hp[p.id],
+        enemyHp: room.hp[enemy?.id] ?? 100,
+        yourCharacter: room.characters[p.id],
+        enemyCharacter: room.characters[enemy?.id],
+        playerId: p.id,
+        time: QUESTION_TIME / 1000,
+      })
+    );
   });
 
   clearTimeout(room.timer);
   room.timer = setTimeout(() => endRound(room), QUESTION_TIME);
 }
 
+// 🧩 End of round logic
 function endRound(room) {
+  const q = room.questions[room.currentQuestion];
+  const correct = q.a.toLowerCase();
   const [p1, p2] = room.players;
-  const a1 = room.answers[p1.id];
-  const a2 = room.answers[p2.id];
 
-  if (a1 && !a2) room.hp[p2.id] -= 25;
-  else if (a2 && !a1) room.hp[p1.id] -= 25;
+  if (!p1 || !p2) return;
 
-  for (const p of [p1, p2]) {
-    if (room.hp[p.id] <= 0) {
-      const winner = p === p1 ? p2 : p1;
-      if (winner.readyState === 1) winner.send(JSON.stringify({ type: "result", msg: "You win!" }));
-      if (p.readyState === 1) p.send(JSON.stringify({ type: "result", msg: "You lose!" }));
-      clearTimeout(room.timer);
-      delete rooms[room.id];
-      return;
-    }
+  const a1 = room.answers[p1.id]?.toLowerCase() ?? "";
+  const a2 = room.answers[p2.id]?.toLowerCase() ?? "";
+
+  if (a1 !== correct) room.hp[p1.id] -= 20;
+  if (a2 !== correct) room.hp[p2.id] -= 20;
+
+  room.players.forEach((p) => {
+    const enemy = room.players.find((e) => e !== p);
+    p.send(
+      JSON.stringify({
+        type: "updateHp",
+        yourHp: room.hp[p.id],
+        enemyHp: room.hp[enemy.id],
+      })
+    );
+  });
+
+  // 🧩 Someone lost?
+  if (room.hp[p1.id] <= 0 || room.hp[p2.id] <= 0) {
+    const winner = room.hp[p1.id] > room.hp[p2.id] ? p1 : p2;
+    winner.send(JSON.stringify({ type: "end", msg: "You won!" }));
+    room.players.find((p) => p !== winner)?.send(JSON.stringify({ type: "end", msg: "You lost!" }));
+    delete rooms[room.id];
+  } else {
+    room.currentQuestion++;
+    startQuestion(room);
   }
-
-  room.currentQuestion = (room.currentQuestion + 1) % room.questions.length;
-  startQuestion(room);
 }
+
+// 🧩 End game helper
+function endGame(room, msg) {
+  room.players.forEach((p) => {
+    p.send(JSON.stringify({ type: "end", msg }));
+  });
+  delete rooms[room.id];
+}
+
+console.log("✅ Quiz Battle server running on ws://localhost:8070");

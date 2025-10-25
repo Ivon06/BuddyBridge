@@ -1,83 +1,122 @@
 body {
-  background: #87ceeb;
-  font-family: sans-serif;
+  
+    background: linear-gradient(to bottom, #f7b7ff, #a2d9ff, #b0ffeb);
+  color: #333;
+  font-family: "Comic Sans MS", cursive, sans-serif;
   text-align: center;
   margin: 0;
   height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding-top: 40px;
-}
-
-h2, h3 {
-  margin: 10px;
-}
-
-#game {
-  display: none;
-  width: 100%;
-  text-align: center;
-}
-
-.battlefield {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 180px;
-  margin-top: 40px;
-}
-
-.fighter {
-  text-align: center;
-}
-
-.hp-bar {
-  height: 20px;
-  width: 200px;
-  background: #ccc;
-  border-radius: 10px;
-  margin: 10px auto;
-  position: relative;
-}
-
-.hp-fill {
-  height: 100%;
-  background: limegreen;
-  border-radius: 10px;
-  width: 100%;
-  transition: width 0.5s, background 0.5s;
-}
-
-img {
-  width: 250px;
-  height: auto;
-  transition: all 0.3s ease;
-}
-
-.flipped {
-  transform: scaleX(-1);
-}
-
-input, button {
-  margin-top: 10px;
-  padding: 10px;
-  font-size: 16px;
+  overflow: hidden;
 }
 
 #language-select {
   margin-top: 60px;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 30px;
+  border-radius: 20px;
+  display: inline-block;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+#arena {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  margin: 40px auto;
+  width: 80%;
+  height: 400px;
+  position: relative;
+  border-radius: 25px;
+  background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+  box-shadow: 0 0 30px rgba(0,0,0,0.2);
+}
+
+/* 🧍 Players closer together */
+.player {
+  position: relative;
+}
+
+.player img {
+  width: 140px;
+  height: auto;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.enemy img {
+  transform: scaleX(-1);
+}
+
+/* HP Bars */
+.hp-bar {
+  width: 140px;
+  height: 15px;
+  background: #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 10px auto;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.hp-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #00ff7f, #32cd32);
+  transition: width 0.4s, background 0.3s;
+}
+
+#question-container {
+  background: rgba(255, 255, 255, 0.9);
+  display: inline-block;
+  padding: 25px 40px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  margin-top: 20px;
+}
+
+input, button {
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  margin: 5px;
 }
 
 button {
-  background-color: #ff6347;
-  border: none;
-  border-radius: 8px;
+  background: #ff6f61;
   color: white;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
 
 button:hover {
-  background-color: #ff4023;
+  background: #ff3b2e;
+}
+
+/* ⚔️ Attack Animations */
+@keyframes attackMoveLeft {
+  0% { transform: translateX(0); }
+  30% { transform: translateX(60px); }
+  60% { transform: translateX(-20px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes attackMoveRight {
+  0% { transform: scaleX(-1) translateX(0); }
+  30% { transform: scaleX(-1) translateX(-60px); }
+  60% { transform: scaleX(-1) translateX(20px); }
+  100% { transform: scaleX(-1) translateX(0); }
+}
+
+/* Apply when attacking */
+.attack-left {
+  animation: attackMoveLeft 0.6s ease-in-out;
+}
+
+.attack-right {
+  animation: attackMoveRight 0.6s ease-in-out;
+}
+
+/* 💥 Hit flash (when damaged) */
+.hit {
+  filter: brightness(1.8) saturate(1.8);
 }
