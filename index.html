@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="utf-8">
-  <title>Quiz Battle Mario</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Quiz Battle</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 40px; }
+    .hp-bar { height: 20px; width: 200px; background: #ccc; border-radius: 10px; margin: 10px auto; position: relative; }
+    .hp-fill { height: 100%; background: limegreen; border-radius: 10px; width: 100%; transition: width 0.5s; }
+  </style>
 </head>
 <body>
-
   <div id="language-select">
     <h2>Select Language</h2>
     <select id="lang">
@@ -19,30 +22,109 @@
     <button onclick="joinGame()">Join Game</button>
   </div>
 
-  <div id="game">
+  <div id="game" style="display:none;">
     <h2 id="question">Waiting for another player...</h2>
     <p>Time left: <span id="timer">--</span> s</p>
 
-    <div class="battlefield">
-      <div class="fighter">
-        <h3>Your HP</h3>
-        <div class="hp-bar"><div id="yourHpFill" class="hp-fill"></div></div>
-        <img id="leftMario" src="mario_standing.png" alt="You">
-      </div>
-
-      <div class="fighter">
-        <h3>Enemy HP</h3>
-        <div class="hp-bar"><div id="enemyHpFill" class="hp-fill"></div></div>
-        <img id="rightMario" src="mario_standing.png" class="flipped" alt="Enemy">
-      </div>
-    </div>
-
     <div>
-      <input id="answer" placeholder="Your answer">
-      <button onclick="sendAnswer()">Send</button>
+      <h3>Your HP</h3>
+      <div class="hp-bar"><div id="yourHpFill" class="hp-fill"></div></div>
     </div>
+    <div>
+      <h3>Enemy HP</h3>
+      <div class="hp-bar"><div id="enemyHpFill" class="hp-fill"></div></div>
+    </div>
+
+    <div id="options"></div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    let ws;
+    let playerId;
+    let canAnswer = false;
+    let timerInterval;
+
+    function joinGame() {
+      const lang = document.getElementById("lang").value;
+      ws = new WebSocket("ws://localhost:8070");
+      ws.onopen = () => ws.send(JSON.stringify({ type: "join", language: lang }));
+      ws.onmessage = handleMessage;
+
+      document.getElementById("language-select").style.display = "none";
+      document.getElementById("game").style.display = "block";
+    }
+
+    function handleMessage(msg) {
+      const data = JSON.parse(msg.data);
+
+      if (data.type === "waiting") {
+        document.getElementById("question").textContent = data.msg;
+        return;
+      }
+
+      if (data.type === "question") {
+        document.getElementById("question").textContent = data.question;
+        updateHpBars(data.yourHp, data.enemyHp);
+        canAnswer = true;
+        showQuestion(data);
+        startTimer(data.time);
+      } else if (data.type === "result") {
+        document.body.innerHTML = `<h1>${data.msg}</h1>`;
+      }
+    }
+
+    function sendAnswer() {
+      if (!canAnswer) return;
+      const val = document.getElementById("options").value.trim();
+      if (!val) return;
+      ws.send(JSON.stringify({ type: "answer", answer: val }));
+      document.getElementById("answer").value = "";
+      canAnswer = false;
+    }
+
+    function showQuestion(data) {
+      document.getElementById("question").textContent = data.question;
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+
+      data.options.forEach((opt, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.onclick = () => {
+          if (!canAnswer) return;
+          ws.send(JSON.stringify({ type: "answer", ans: opt }));
+          optionsDiv.innerHTML = "<p>Answer submitted!</p>";
+        };
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function startTimer(seconds) {
+      clearInterval(timerInterval);
+      let timeLeft = seconds;
+      document.getElementById("timer").textContent = timeLeft;
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          canAnswer = false;
+          
+        }
+      }, 1000);
+    }
+
+    function updateHpBars(yourHp, enemyHp) {
+      const yourBar = document.getElementById("yourHpFill");
+      const enemyBar = document.getElementById("enemyHpFill");
+
+      yourBar.style.width = `${yourHp}%`;
+      enemyBar.style.width = `${enemyHp}%`;
+
+      yourBar.style.background = yourHp > 50 ? "limegreen" : yourHp > 25 ? "orange" : "red";
+      enemyBar.style.background = enemyHp > 50 ? "limegreen" : enemyHp > 25 ? "orange" : "red";
+    }
+  </script>
 </body>
 </html>

@@ -60,7 +60,7 @@ wss.on("connection", (ws) => {
       if (!room) return;
 
       const q = room.questions[room.currentQuestion];
-      const correct = data.answer.trim().toLowerCase() === q.a.toLowerCase();
+      const correct = data.ans.trim().toLowerCase() === q.a.toLowerCase();
       room.answers[ws.id] = correct;
     }
   });
@@ -85,6 +85,7 @@ function startQuestion(room) {
     p.send(JSON.stringify({
       type: "question",
       question: q.q,
+      options: q.options,
       yourHp: room.hp[p.id],
       enemyHp: room.hp[enemy?.id] ?? 100,
       playerId: p.id,

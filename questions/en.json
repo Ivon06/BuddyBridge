@@ -1,6 +1,68 @@
 [
-  { "q": "2 + 2 = ?", "a": "4" },
-  { "q": "Capital of France?", "a": "paris" },
-  { "q": "5 * 3 = ?", "a": "15" },
-  { "q": "Color of the sky?", "a": "blue" }
+  {
+    "q": "What is 2 + 2?",
+    "options": ["3", "4", "5", "6"],
+    "a": "4"
+  },
+  {
+    "q": "Capital of France?",
+    "options": ["Berlin", "Madrid", "Paris", "Rome"],
+    "a": "Paris"
+  },
+  {
+    "q": "Which planet is closest to the Sun?",
+    "options": ["Venus", "Earth", "Mercury", "Mars"],
+    "a": "Mercury"
+  },
+    {
+        "q": "What is the largest mammal?",
+        "options": ["Elephant", "Blue Whale", "Giraffe", "Hippopotamus"],
+        "a": "Blue Whale"
+    },
+    {
+        "q": "Who wrote 'Romeo and Juliet'?",
+        "options": ["Charles Dickens", "William Shakespeare", "Mark Twain", "Jane Austen"],
+        "a": "William Shakespeare"
+    },
+    {
+        "q": "What is the chemical symbol for water?",
+        "options": ["O2", "H2O", "CO2", "NaCl"],
+        "a": "H2O"
+    },
+    {
+        "q": "Which organ is responsible for pumping blood?",
+        "options": ["Liver", "Brain", "Heart", "Lungs"],
+        "a": "Heart"
+    },
+    {
+        "q": "What is the hardest natural substance on Earth?",
+        "options": ["Gold", "Iron", "Diamond", "Silver"],
+        "a": "Diamond"
+    },
+    {
+        "q": "Who painted the Mona Lisa?",
+        "options": ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"],
+        "a": "Leonardo da Vinci"
+    },
+    {
+        "q": "What is the smallest prime number?",
+        "options": ["0", "1", "2", "3"],
+        "a": 2
+    },
+    {
+        "q": "Which gas do plants absorb from the atmosphere?",
+        "options": ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+        "a": "Carbon Dioxide"
+    },
+    {
+        "q": "What is the main ingredient in guacamole?",
+        "options": ["Tomato", "Avocado", "Onion", "Pepper"],
+        "a": "Avocado"
+    },
+    {
+        "q": "Which continent is the Sahara Desert located on?",
+        "options": ["Asia", "Africa", "Australia", "South America"],
+        "a": "Africa"
+    }
 ]
+
