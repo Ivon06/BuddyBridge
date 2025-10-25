@@ -1,0 +1,83 @@
+body {
+  background: #87ceeb;
+  font-family: sans-serif;
+  text-align: center;
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 40px;
+}
+
+h2, h3 {
+  margin: 10px;
+}
+
+#game {
+  display: none;
+  width: 100%;
+  text-align: center;
+}
+
+.battlefield {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 180px;
+  margin-top: 40px;
+}
+
+.fighter {
+  text-align: center;
+}
+
+.hp-bar {
+  height: 20px;
+  width: 200px;
+  background: #ccc;
+  border-radius: 10px;
+  margin: 10px auto;
+  position: relative;
+}
+
+.hp-fill {
+  height: 100%;
+  background: limegreen;
+  border-radius: 10px;
+  width: 100%;
+  transition: width 0.5s, background 0.5s;
+}
+
+img {
+  width: 250px;
+  height: auto;
+  transition: all 0.3s ease;
+}
+
+.flipped {
+  transform: scaleX(-1);
+}
+
+input, button {
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 16px;
+}
+
+#language-select {
+  margin-top: 60px;
+}
+
+button {
+  background-color: #ff6347;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #ff4023;
+}
