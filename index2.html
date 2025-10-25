@@ -1,0 +1,169 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>BuddyBridge Children's Game</title>
+        <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: 'Fredoka One', cursive;
+                background: linear-gradient(to bottom, #f7b7ff, #a2d9ff, #b0ffeb);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .navbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .navbar-logo {
+            font-size: 1.8rem;
+            color: #ff4eb8;
+            text-shadow: 1px 1px 3px #00000050;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .navbar-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255, 123, 193, 0.5);
+            
+        }
+
+        .navbar-links a:hover {
+            background: #ff7bc1;
+            transform: scale(1.1);
+        }
+    
+            .game-container {
+                text-align: center;
+                background: rgba(255, 255, 255, 0.2);
+                padding: 40px;
+                border-radius: 20px;
+                box-shadow: 0 0 40px rgba(0,0,0,0.2);
+                position: relative;
+            }
+    
+            .game-title {
+                font-size: 3rem;
+                color: #fff;
+                margin-bottom: 10px;
+                text-shadow: 2px 2px 5px #00000050;
+            }
+    
+            .game-subtitle {
+                font-size: 1.5rem;
+                color: #fff;
+                margin-bottom: 30px;
+            }
+    
+            .start-button {
+                padding: 15px 40px;
+                font-size: 1.2rem;
+                border: none;
+                border-radius: 30px;
+                background: #ff7bc1;
+                color: #fff;
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+    
+            .start-button:hover {
+                transform: scale(1.1);
+                box-shadow: 0 0 20px #ff7bc1;
+            }
+    
+            .monster {
+                position: absolute;
+                width: 100px;
+                animation: float 3s ease-in-out infinite alternate;
+            }
+    
+            .monster-left {
+                left: -50px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+    
+            .monster-right {
+                right: -50px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            .search-bar {
+    width: 80%;
+    max-width: 400px;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 30px;
+    margin-bottom: 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.6);
+    color: #333;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.search-bar:focus {
+    outline: none;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #ff7bc1;
+}
+
+    
+            @keyframes float {
+                0% { transform: translateY(-50%) translateY(0px); }
+                100% { transform: translateY(-50%) translateY(-20px); }
+            }
+    
+        </style>
+    </head>
+    <body>
+        <div class="navbar">
+            <div class="navbar-logo">BuddyBridge</div>
+            <div class="navbar-links">
+                
+               
+            </div>
+        </div>
+
+        <div class="game-container">
+            <h1 class="game-title">BuddyBridge</h1>
+            <h2 class="game-subtitle">Children's Game</h2>
+
+            <button class="start-button">Start</button>
+    
+            <img src="Animation-PNG-Photos.png" class="monster monster-left" alt="Monster Left">
+            <img src="Animation-PNG-Photos.png" class="monster monster-right" alt="Monster Right">
+        </div>
+    </body>
+    </html>
+    
+   
+ 
