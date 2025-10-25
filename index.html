@@ -1,8 +1,32 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><title>Quiz Battle</title></head>
+<head>
+  <meta charset="utf-8">
+  <title>Quiz Battle</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    .hp-bar {
+      height: 20px; width: 200px; background: #ccc; border-radius: 10px; margin: 10px auto;
+      position: relative;
+    }
+    .hp-fill {
+      height: 100%; background: limegreen; border-radius: 10px; width: 100%; transition: width 0.5s;
+    }
+  </style>
+</head>
 <body>
   <h2 id="question">Waiting for another player...</h2>
+  <p>Time left: <span id="timer">--</span> s</p>
+
+  <div>
+    <h3>Your HP</h3>
+    <div class="hp-bar"><div id="yourHpFill" class="hp-fill"></div></div>
+  </div>
+  <div>
+    <h3>Enemy HP</h3>
+    <div class="hp-bar"><div id="enemyHpFill" class="hp-fill"></div></div>
+  </div>
+
   <input id="answer" placeholder="Your answer">
   <button onclick="sendAnswer()">Send</button>
   <p id="status"></p>
@@ -10,7 +34,8 @@
   <script>
     const ws = new WebSocket("ws://localhost:8070");
     let playerId = localStorage.getItem("playerId");
-    let enemyHp = 100;
+    let canAnswer = false;
+    let timerInterval;
 
     ws.onopen = () => ws.send(JSON.stringify({ type: "join" }));
 
@@ -22,13 +47,11 @@
         localStorage.setItem("playerId", playerId);
       }
 
-      if (data.type === "question" || data.type === "update") {
+      if (data.type === "question") {
         document.getElementById("question").textContent = data.question;
-        if (typeof data.hp !== "undefined") {
-          enemyHp = data.hp;
-          localStorage.setItem("enemyHp", enemyHp);
-        }
-        updateStatus();
+        updateHpBars(data.yourHp, data.enemyHp);
+        canAnswer = true;
+        startTimer(data.time);
       } else if (data.type === "result") {
         localStorage.clear();
         document.body.innerHTML = `<h1>${data.msg}</h1>`;
@@ -36,16 +59,39 @@
     };
 
     function sendAnswer() {
+      if (!canAnswer) return;
       const val = document.getElementById("answer").value.trim();
       if (!val) return;
       ws.send(JSON.stringify({ type: "answer", answer: val }));
       document.getElementById("answer").value = "";
+      canAnswer = false;
     }
 
-    function updateStatus() {
-      const hp = localStorage.getItem("enemyHp") || 100;
-      document.getElementById("status").textContent = `Enemy HP: ${hp}`;
+    function startTimer(seconds) {
+      clearInterval(timerInterval);
+      let timeLeft = seconds;
+      document.getElementById("timer").textContent = timeLeft;
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          canAnswer = false;
+        }
+      }, 1000);
+    }
+
+    function updateHpBars(yourHp, enemyHp) {
+      document.getElementById("yourHpFill").style.width = `${yourHp}%`;
+      document.getElementById("enemyHpFill").style.width = `${enemyHp}%`;
+
+      document.getElementById("yourHpFill").style.background = yourHp > 50 ? "limegreen" :
+        yourHp > 25 ? "orange" : "red";
+      document.getElementById("enemyHpFill").style.background = enemyHp > 50 ? "limegreen" :
+        enemyHp > 25 ? "orange" : "red";
     }
   </script>
 </body>
 </html>
+
