@@ -1,0 +1,23 @@
+{
+  "name": "buddybridge",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Ivon06/BuddyBridge#readme",
+  "bugs": {
+    "url": "https://github.com/Ivon06/BuddyBridge/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ivon06/BuddyBridge.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}
