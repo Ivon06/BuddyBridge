@@ -1,33 +1,51 @@
 <!DOCTYPE html>
 <html>
-    <head><meta charset="utf-8"></head><head></head><body>
-    <h2 id="question">Waiting for another player...</h2>
-    <input id="answer" placeholder="Your answer">
-    <button onclick="sendAnswer()">Send</button>
-    <p id="status"></p>
+<head><meta charset="utf-8"><title>Quiz Battle</title></head>
+<body>
+  <h2 id="question">Waiting for another player...</h2>
+  <input id="answer" placeholder="Your answer">
+  <button onclick="sendAnswer()">Send</button>
+  <p id="status"></p>
 
-    <script>
-      const ws = new WebSocket("ws://localhost:8070");
-      ws.onopen = () => ws.send(JSON.stringify({ type: "join" }));
+  <script>
+    const ws = new WebSocket("ws://localhost:8070");
+    let playerId = localStorage.getItem("playerId");
+    let enemyHp = 100;
 
-      ws.onmessage = (msg) => {
-        const data = JSON.parse(msg.data);
-        if (data.type === "question" || data.type === "update") {
-          document.getElementById("question").textContent = data.question;
-          document.getElementById("status").textContent = data.hp
-            ? `Enemy HP: ${data.hp}`
-            : "";
-        } else if (data.type === "result") {
-          document.body.innerHTML = `<h1>${data.msg}</h1>`;
-        }
-      };
+    ws.onopen = () => ws.send(JSON.stringify({ type: "join" }));
 
-      function sendAnswer() {
-        const val = document.getElementById("answer").value;
-        ws.send(JSON.stringify({ type: "answer", answer: val }));
-        document.getElementById("answer").value = "";
+    ws.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      if (data.playerId && !playerId) {
+        playerId = data.playerId;
+        localStorage.setItem("playerId", playerId);
       }
-    </script>
-  
 
-</body></html>
+      if (data.type === "question" || data.type === "update") {
+        document.getElementById("question").textContent = data.question;
+        if (typeof data.hp !== "undefined") {
+          enemyHp = data.hp;
+          localStorage.setItem("enemyHp", enemyHp);
+        }
+        updateStatus();
+      } else if (data.type === "result") {
+        localStorage.clear();
+        document.body.innerHTML = `<h1>${data.msg}</h1>`;
+      }
+    };
+
+    function sendAnswer() {
+      const val = document.getElementById("answer").value.trim();
+      if (!val) return;
+      ws.send(JSON.stringify({ type: "answer", answer: val }));
+      document.getElementById("answer").value = "";
+    }
+
+    function updateStatus() {
+      const hp = localStorage.getItem("enemyHp") || 100;
+      document.getElementById("status").textContent = `Enemy HP: ${hp}`;
+    }
+  </script>
+</body>
+</html>
